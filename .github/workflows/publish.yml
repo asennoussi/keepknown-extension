@@ -1,0 +1,41 @@
+name: Publish to Chrome Web Store
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Create extension zip
+        run: |
+          zip -r extension.zip manifest.json popup.html popup.js background.js icons/
+
+      - name: Upload to Chrome Web Store
+        run: |
+          npx chrome-webstore-upload-cli upload \
+            --source extension.zip \
+            --extension-id ${{ secrets.CHROME_EXTENSION_ID }} \
+            --client-id ${{ secrets.CHROME_CLIENT_ID }} \
+            --client-secret ${{ secrets.CHROME_CLIENT_SECRET }} \
+            --refresh-token ${{ secrets.CHROME_REFRESH_TOKEN }}
+
+      - name: Publish to Chrome Web Store
+        run: |
+          npx chrome-webstore-upload-cli publish \
+            --extension-id ${{ secrets.CHROME_EXTENSION_ID }} \
+            --client-id ${{ secrets.CHROME_CLIENT_ID }} \
+            --client-secret ${{ secrets.CHROME_CLIENT_SECRET }} \
+            --refresh-token ${{ secrets.CHROME_REFRESH_TOKEN }}
